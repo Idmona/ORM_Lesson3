@@ -3,24 +3,60 @@ from datacenter.models import Schoolkid, Mark, Chastisement, Lesson, Commendatio
 
 
 def fix_marks(schoolkid):
-    bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
-    for mark in bad_marks:
-        mark.points = 5
-        mark.save()
+    Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(points=5)
 
 
 def remove_chastisements(schoolkid):
-    chastisements = Chastisement.objects.filter(schoolkid=schoolkid)
-    deleted_count = chastisements.delete()
+    Chastisement.objects.filter(schoolkid=schoolkid).delete()
 
 
-def create_commendation(schoolkid, random_lesson):
+def create_commendation(schoolkid):
+    last_lesson = Lesson.objects.filter(
+        year_of_study=schoolkid.year_of_study,
+        group_letter=schoolkid.group_letter
+    ).order_by('-date').first()
+
+    praise_texts = [
+        "Молодец!",
+        "Отлично!",
+        "Хорошо!",
+        "Гораздо лучше, чем я ожидал!",
+        "Ты меня приятно удивил!",
+        "Великолепно!",
+        "Прекрасно!",
+        "Ты меня очень обрадовал!",
+        "Именно этого я давно ждал от тебя!",
+        "Сказано здорово – просто и ясно!",
+        "Ты, как всегда, точен!",
+        "Очень хороший ответ!",
+        "Талантливо!",
+        "Ты сегодня прыгнул выше головы!",
+        "Я поражен!",
+        "Уже существенно лучше!",
+        "Потрясающе!",
+        "Замечательно!",
+        "Прекрасное начало!",
+        "Так держать!",
+        "Ты на верном пути!",
+        "Здорово!",
+        "Это как раз то, что нужно!",
+        "Я тобой горжусь!",
+        "С каждым разом у тебя получается всё лучше!",
+        "Мы с тобой не зря поработали!",
+        "Я вижу, как ты стараешься!",
+        "Ты растешь над собой!",
+        "Ты многое сделал, я это вижу!",
+        "Теперь у тебя точно все получится!"
+    ]
+
+    random_praise = random.choice(praise_texts)
+
     Commendation.objects.create(
-        text="Молодец!", # Укажите текст похвалы
-        created=random_lesson.date,
+        text=random_praise,
+        created=last_lesson.date,
         schoolkid=schoolkid,
-        subject=random_lesson.subject,
-        teacher=random_lesson.teacher
+        subject=last_lesson.subject,
+        teacher=last_lesson.teacher
     )
 
 
